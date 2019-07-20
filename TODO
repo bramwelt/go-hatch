@@ -1,0 +1,17 @@
+TODO
+====
+- [ ] Convert operations into Environment and convert them into
+  pre-defined functions
+- [ ] Provide flags to switch between repl, compiler, and outputs
+  (tokens, asm)
+- [ ] Add Error reporting
+  - [ ] Determine where and how to store syntax error information (lines,
+    cols)
+- [ ] Document Grammar
+
+LATER
+=====
+- [ ] Z80/8080 Generation
+  - [ ] Determine how to support I/O
+- [ ] Support function definitions
+  - [ ] Determine scoping

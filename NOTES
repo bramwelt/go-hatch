@@ -1,0 +1,30 @@
+[x] Initial Grammar
+---
+expr = num
+     | '(' op expr expr ')'
+
+num = [0-9]+
+op  = + | - | * | *
+
+[ ] Add Errors (Divide by Zero, Syntax, Illegal token)
+
+[ ] Add variables
+---
+expr = atom
+     | '(' define sym atom ')'
+     | '(' op expr expr ')'
+
+atom = num
+     | sym
+num = [0-9]+
+sym = [a-zA-Z]+
+op  = + | - | * | *
+
+[ ] Adds ?
+---
+(eq val val)
+(cons val list)
+(car list)
+(cdr list)
+(cond ...)
+(quote ...)
