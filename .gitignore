@@ -1,2 +1,5 @@
 # vim temp files
 *.swp
+
+# Ignore binary
+go-hatch
