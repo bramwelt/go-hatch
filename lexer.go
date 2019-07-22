@@ -26,7 +26,7 @@ const (
 	NUM = iota
 	OP
 	SYM
-	DEFINE
+	DEF
 	LPEREN
 	RPEREN
 	EOF
@@ -41,7 +41,7 @@ var TokenId = map[byte]string{
 	LPEREN: "(",
 	RPEREN: ")",
 	SYM:    "SYM",
-	DEFINE: "DEF",
+	DEF:    "DEF",
 	EOF:    "EOF",
 	ILLEG:  "ILLEG",
 }
@@ -139,7 +139,7 @@ func GetToken(b byte, reader *bufio.Reader) *Token {
 		b := getWord(b, reader)
 		switch b {
 		case "define":
-			return &Token{DEFINE, 0, b}
+			return &Token{DEF, 0, b}
 		}
 		return &Token{SYM, 0, b}
 	}
