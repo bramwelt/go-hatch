@@ -19,11 +19,14 @@ const PS1 = "> "
 // 'Read, Evaluate, Print, Loop'
 func Repl() {
 	reader := bufio.NewReader(os.Stdin)
+	var env = &Env{
+		symbols: make(map[string]int),
+	}
 	for {
 		fmt.Print(PS1)
 		text := Read(reader)
 		lineReader := bufio.NewReader(strings.NewReader(text))
-		output := Eval(lineReader)
+		output := Eval(env, lineReader)
 		Print(output)
 	}
 }
@@ -46,8 +49,8 @@ func Print(text string) {
 }
 
 // Evaluate: Tokenize the stream (AST), parse, and return the result
-func Eval(r *bufio.Reader) string {
+func Eval(env *Env, r *bufio.Reader) string {
 	tokenizer := Tokenize(r)
-	result := Parse(tokenizer)
+	result := Parse(env, tokenizer)
 	return strconv.Itoa(result)
 }

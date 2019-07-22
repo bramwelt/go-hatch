@@ -1,5 +1,6 @@
 TODO
 ====
+- [x] Add variables
 - [ ] Convert operations into Environment and convert them into
   pre-defined functions
 - [ ] Provide flags to switch between repl, compiler, and outputs
