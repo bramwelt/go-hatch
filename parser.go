@@ -114,17 +114,6 @@ func ASM(env *Env, pt *ParseTree, stb *strings.Builder) *Token {
 	if pt == nil {
 		return nil
 	}
-	// TODO: Follow Expression to walk ParseTree
-	if pt.left != nil {
-		fmt.Printf("left")
-		return ASM(env, pt.left, stb)
-		fmt.Printf("center")
-		return ASM(env, pt, stb)
-		if pt.right != nil {
-			fmt.Printf("right")
-			return ASM(env, pt.right, stb)
-		}
-	}
 	t := pt.token
 	switch t.Id {
 	case OP:
@@ -155,9 +144,12 @@ func ASM(env *Env, pt *ParseTree, stb *strings.Builder) *Token {
 			env.register++
 		*/
 		return t
+	case LPEREN:
+		return ASM(env, pt.left, stb)
 	default:
 		return t
 	}
+	return nil
 }
 
 // Given a operation and two numbers, return the result represented by
