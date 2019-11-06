@@ -3,3 +3,6 @@
 
 # Ignore binary
 go-hatch
+
+# Ignore ti directory
+ti/

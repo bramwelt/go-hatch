@@ -13,3 +13,8 @@ recursive descent compiler.
 Building
 --------
 The code can be built with `go build` or ran directly with `go run *.go`
+
+References
+----------
+[Small-C](http://www.drdobbs.com/developer-network-small-c-compiler-book/184415519)
+[ASM in 28 Days](https://tutorials.eeems.ca/ASMin28Days/lesson/toc.html)
