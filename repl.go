@@ -10,7 +10,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -27,6 +26,7 @@ func Repl() {
 		text := Read(reader)
 		lineReader := bufio.NewReader(strings.NewReader(text))
 		output := Eval(env, lineReader)
+		output += "\n"
 		Print(output)
 	}
 }
@@ -45,12 +45,14 @@ func Read(reader *bufio.Reader) string {
 }
 
 func Print(text string) {
-	fmt.Println(text)
+	fmt.Print(text)
 }
 
 // Evaluate: Tokenize the stream (AST), parse, and return the result
 func Eval(env *Env, r *bufio.Reader) string {
 	tokenizer := Tokenize(r)
-	result := Parse(env, tokenizer)
-	return strconv.Itoa(result)
+	if Flags.Tokens {
+		return tokenizer.Print()
+	}
+	return Parse(env, tokenizer)
 }

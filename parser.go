@@ -4,13 +4,44 @@ Copyright (c) 2019 Trevor Bramwell
 */
 package main
 
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
+const asmHeader = `.nolist
+#include "ti83plus.inc"
+.list
+.org 9D93h
+.db $BB,$6D
+	bcall(_ClrLCDFull)
+	ld a,0
+	ld (CURCOL),a
+	ld (CURROW),a
+`
+
+const asmFooter = `	bcall(_DispHL)
+	bcall(_NewLine)
+	ret
+.end
+.end
+`
+
 type ParseTree struct {
 	token       *Token
 	left, right *ParseTree
 }
 
+var Register = map[int]string{
+	0: "hl",
+	1: "bc",
+}
+
 type Env struct {
-	symbols map[string]int
+	symbols  map[string]int
+	numsyms  int
+	register int
 }
 
 // Given a list of tokens return an AST
@@ -33,29 +64,42 @@ func Expression(env *Env, tz *Tokenizer) *ParseTree {
 			}
 		}
 	}
+	// TODO: Handle RPEREN and returning Errors as Expression only
+	// constructs ParseTrees for single lines currently
 	return nil
 }
 
 // Parser needs to construct the grammar it expects
-func Parse(env *Env, tz *Tokenizer) int {
+func Parse(env *Env, tz *Tokenizer) string {
 	pt := Expression(env, tz)
-	/*
-		// Debug environment
+	if Flags.Debug {
+		// Debug symbols and tree
 		for k, v := range env.symbols {
-			fmt.Printf("%s: %d\n", k, v)
+			fmt.Printf("sym %s: %d\n", k, v)
 		}
-	*/
-	return value(env, pt)
+		fmt.Printf("%+v", pt)
+	}
+	if Flags.REPL {
+		return strconv.Itoa(IRValue(env, pt))
+	}
+	if Flags.Compile {
+		stb := new(strings.Builder)
+		stb.WriteString(asmHeader)
+		ASM(env, pt, stb)
+		stb.WriteString(asmFooter)
+		return stb.String()
+	}
+	return ""
 }
 
-// Walk the tree to determine the value
-func value(env *Env, pt *ParseTree) int {
+// IRValue Walk the tree to determine the value
+func IRValue(env *Env, pt *ParseTree) int {
 	if pt != nil {
 		t := pt.token
 		if t.Id == OP {
-			x := value(env, pt.left)
-			y := value(env, pt.right)
-			return result(t.Word, x, y)
+			x := IRValue(env, pt.left)
+			y := IRValue(env, pt.right)
+			return IRResult(t.Word, x, y)
 		} else if t.Id == SYM {
 			return env.symbols[t.Word]
 		} else if t.Id == NUM {
@@ -65,9 +109,60 @@ func value(env *Env, pt *ParseTree) int {
 	return 0
 }
 
+// ASM Walk the tree and ouput a string of assembly
+func ASM(env *Env, pt *ParseTree, stb *strings.Builder) *Token {
+	if pt == nil {
+		return nil
+	}
+	// TODO: Follow Expression to walk ParseTree
+	if pt.left != nil {
+		fmt.Printf("left")
+		return ASM(env, pt.left, stb)
+		fmt.Printf("center")
+		return ASM(env, pt, stb)
+		if pt.right != nil {
+			fmt.Printf("right")
+			return ASM(env, pt.right, stb)
+		}
+	}
+	t := pt.token
+	switch t.Id {
+	case OP:
+		x := ASM(env, pt.left, stb)
+		y := ASM(env, pt.right, stb)
+		switch t.Word {
+		case "+":
+			stb.WriteString(fmt.Sprintf("\tld hl,%d\n\tld bc,%d\n", x.Val, y.Val))
+			stb.WriteString(fmt.Sprintf("\tadd hl,bc\n"))
+		case "-":
+			stb.WriteString(fmt.Sprintf("\tsub %d,%d\n", y.Val, x.Val))
+		case "*":
+			stb.WriteString("\tmul")
+		case "/":
+			stb.WriteString("\tdiv")
+		}
+		return t
+	case SYM:
+		// Increment symbol pointer?
+		//sym := strconv.Itoa(env.symbols[t.Word])
+		stb.WriteString(fmt.Sprintf("\tld %v,%d\n", Register[env.register], env.symbols[t.Word]))
+		env.register++
+		return t
+	case NUM:
+		// TODO: Store in data?
+		/*
+			stb.WriteString(fmt.Sprintf("ld %d,hl%d\n", t.Val, env.register))
+			env.register++
+		*/
+		return t
+	default:
+		return t
+	}
+}
+
 // Given a operation and two numbers, return the result represented by
 // the operation
-func result(op string, x int, y int) int {
+func IRResult(op string, x int, y int) int {
 	switch op {
 	case "+":
 		return x + y
